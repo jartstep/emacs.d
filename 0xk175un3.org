@@ -1,0 +1,428 @@
+* Better Defaults
+- Basic Configurations
+#+BEGIN_SRC emacs-lisp
+  (setq-default
+   line-number-mode t
+   column-number-mode t
+   scroll-error-top-bottom t
+   show-paren-delay 0.1
+   sentence-end-double-space nil
+   split-width-threshold nil
+   split-height-threshold nil
+   ring-bell-function 'ignore
+   inhibit-startup-echo-area-message t
+   enable-local-variables :all
+   mouse-1-click-follows-link t
+   mouse-1-click-in-non-selected-windows t
+   mouse-wheel-scroll-amount '(0.01)
+   ns-use-native-fullscreen nil
+   ns-pop-up-frames nil
+   line-move-visual t
+   mode-line-format nil
+   make-backup-files nil                            ; Stop creating backup~ files
+   auto-save-default nil                            ; Stop creating #autosave# files
+   create-lockfiles nil                             ; Stop creating lockfiles
+   ad-redefinition-action 'accept                   ; Silence warnings for redefinition
+   cursor-in-non-selected-windows t                 ; Hide the cursor in inactive windows
+   display-time-default-load-average nil            ; Don't display load average
+   fill-column 80                                   ; Set width for automatic line breaks
+   help-window-select t                             ; Focus new help windows when opened
+   indent-tabs-mode nil                             ; Prefers spaces over tabs
+   inhibit-startup-screen t                         ; Disable start-up screen
+   initial-scratch-message ""                       ; Empty the initial *scratch* buffer
+   kill-ring-max 128                                ; Maximum length of kill ring
+   load-prefer-newer t                              ; Prefers the newest version of a file
+   mark-ring-max 128                                ; Maximum length of mark ring
+   scroll-conservatively most-positive-fixnum       ; Always scroll by one line
+   select-enable-clipboard t                        ; Merge system's and Emacs' clipboard
+   tab-width 4                                      ; Set width for tabs
+   user-full-name "Artemiy Stepanov"                ; Set the full name of the current user
+   vc-follow-symlinks t                             ; Always follow the symlinks
+   view-read-only t)                                ; Always open read-only buffers in view-mode
+
+  (column-number-mode 1)                            ; Show the column number
+  (display-time-mode 1)                             ; Enable time in the mode-line
+  (fset 'yes-or-no-p 'y-or-n-p)                     ; Replace yes/no prompts with y/n
+  ;; (global-hl-line-mode)                             ; Hightlight current line
+  (set-default-coding-systems 'utf-8)               ; Default to utf-8 encoding
+  (show-paren-mode 1)                               ; Show the parent
+  (delete-selection-mode t)
+#+END_SRC
+- Turn off mouse
+#+BEGIN_SRC emacs-lisp
+(when window-system
+  (menu-bar-mode -1)              ; Disable the menu bar
+  (scroll-bar-mode -1)            ; Disable the scroll bar
+  (tool-bar-mode -1)              ; Disable the tool bar
+  (tooltip-mode -1))              ; Disable the tooltips
+#+END_SRC
+- All the icons
+#+BEGIN_SRC emacs-lisp
+(use-package all-the-icons 
+  :ensure t
+  :defer 0.5)
+#+END_SRC
+- PATH variables from shell
+#+BEGIN_SRC emacs-lisp
+(use-package exec-path-from-shell
+  :ensure t
+  :if (memq window-system '(mac ns x))
+  :config
+    (setq exec-path-from-shell-variables '("PATH" "NVM_DIR"))
+    (exec-path-from-shell-initialize))
+#+END_SRC
+- AG
+#+BEGIN_SRC emacs-lisp
+(use-package ag
+  :ensure t)
+#+END_SRC
+- Fonts
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default nil :font "Cascadia Code" :weight 'light' :height 160)
+(set-fontset-font t 'latin "Noto Sans")
+#+END_SRC
+* Programming
+** LSP, auto-completetion and text manipulation
+- Expand Region
+#+BEGIN_SRC emacs-lisp
+(use-package expand-region
+  :ensure t
+  :commands er/expand-region
+  :bind ("C-c i" . er/expand-region))
+#+END_SRC
+
+- LSP
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-mode
+  :ensure t
+  :hook ((ruby-mode go-mode) . lsp)
+  :custom
+  (lsp-prefer-flymake nil))
+#+END_SRC
+
+- Company-lsp
+#+BEGIN_SRC emacs-lisp
+(use-package company-lsp
+  :ensure t
+  :commands (company-lsp))
+#+END_SRC
+
+- Company
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :ensure t
+  :defer 0.5
+  :delight
+  :custom
+  (company-minimum-prefix-length 2)
+  (company-show-numbers t)
+  (company-tooltip-align-annotations 't)
+  (global-company-mode t)
+  (company-require-match nil)
+  (company-idle-delay 0.5)
+  (company-tooltip-align-annotation t)
+  (company-frontends '(company-pseudo-tooltip-frontend company-echo-metadata-frontend))
+  :commands (company-mode global-company-mode company-complete
+                            company-complete-common company-manual-begin
+                            company-grab-line)
+  :bind (
+    :map company-active-map
+    ("C-n" . company-select-next)
+    ("C-p" . company-select-previous))
+  :hook ((prog-mode . company-mode)
+           (comint-mode . company-mode)))
+#+END_SRC
+** Snippets
+- Yasnippet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet
+  :config (yasnippet-snippets-initialize))
+
+(use-package yasnippet
+  :ensure t
+  :delight yas-minor-mode " υ"
+  :hook (yas-minor-mode . my/disable-yas-if-no-snippets)
+  :config (yas-global-mode)
+  :preface
+  (defun my/disable-yas-if-no-snippets ()
+    (when (and yas-minor-mode (null (yas--get-snippet-tables)))
+      (yas-minor-mode -1))))
+
+(use-package ivy-yasnippet :ensure t :after yasnippet)
+#+END_SRC
+** Project Navigation
+- Projectile
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :ensure t
+  :init
+    (progn
+      (projectile-mode)
+      (setq projectile-completion-system 'ivy)
+      (setq projectile-enable-caching nil)
+      (setq projectile-verbose nil)
+      (setq projectile-do-log nil)))
+#+END_SRC
+- Counsel
+#+BEGIN_SRC emacs-lisp
+(use-package counsel
+  :ensure t)
+#+END_SRC
+- Ivy
+#+BEGIN_SRC emacs-lisp
+(use-package ivy
+  :ensure t
+  :bind (("C-x b" . ivy-switch-buffer))
+  :config
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-count-format "%d/%d ")
+    (setq ivy-display-style 'fancy))
+#+END_SRC
+- Swiper
+#+BEGIN_SRC emacs-lisp
+(use-package swiper
+  :ensure t
+  :bind (("\C-s" . swiper)
+         ("C-c C-r" . ivy-resume)
+         ("M-x" . counsel-M-x)
+         ("C-c C-f" . counsel-find-file))
+  :config
+    (progn
+      (ivy-mode 1)
+      (setq ivy-use-virtual-buffers t)
+      (setq ivy-display-style 'fancy)))
+#+END_SRC
+- Avy
+#+BEGIN_SRC emacs-lisp
+(use-package avy
+  :ensure t
+  :bind (("C-;" . avy-goto-char)))
+#+END_SRC
+- Ace-window
+#+BEGIN_SRC emacs-lisp
+(use-package ace-window
+  :ensure t
+  :bind (("M-o" . ace-window)
+         ("M-p" . ace-delete-window))
+  :init (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+#+END_SRC
+** Git
+- Magit
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :ensure t)
+
+#+END_SRC
+- Git-gutter
+#+BEGIN_SRC emacs-lisp
+(use-package git-gutter
+  :ensure t
+  :config (global-git-gutter-mode 1))
+#+END_SRC
+** Linters
+- Flycheck
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :delight
+  :init (global-flycheck-mode)
+  :custom
+    (flycheck-display-errors-delay .3)
+    (flycheck-disabled-checkers '(ruby-reek)))
+#+END_SRC
+** Docker
+#+BEGIN_SRC emacs-lisp
+(use-package dockerfile-mode
+  :ensure t
+  :delight "δ "
+  :mode "Dockerfile\\'")
+#+END_SRC
+** Languages
+*** Ruby <3
+- Ruby Mode
+#+BEGIN_SRC emacs-lisp
+(use-package ruby-mode
+  :ensure t
+  :interpreter "ruby"
+  :mode "\\.rb$"
+  :mode "\\.rake$"
+  :mode "\\.gemspec$"
+  :mode "\\.\\(pry\\|irb\\)rc$"
+  :mode "/\\(Gem\\|Cap\\|Vagrant\\|Rake\\|Pod\\|Puppet\\|Berks\\)file$"
+  :config
+    (setq ruby-insert-encoding-magic-comment nil)
+    (setq ruby-deep-indent-paren t)
+  :init
+    (add-hook 'ruby-mode-hook #'flycheck-mode)
+    (add-hook 'ruby-mode-hook 'lsp))
+#+END_SRC
+- Rbenv
+#+BEGIN_SRC emacs-lisp
+(use-package rbenv
+  :ensure t
+  :init
+    (progn
+      (setq rbenv-show-active-ruby-in-modeline nil)
+      (setq rbenv-modeline-function 'rbenv--modeline-plain))
+      (global-rbenv-mode))
+#+END_SRC
+- Ruby-end
+#+BEGIN_SRC emacs-lisp
+(use-package ruby-end
+  :ensure t
+  :init
+    (add-hook 'ruby-mode-hook 'ruby-end-mode t))
+#+END_SRC
+- Projectile-rails
+#+BEGIN_SRC emacs-lisp
+(use-package projectile-rails
+  :ensure t
+  :after projectile
+  :init
+    (projectile-rails-global-mode t))
+#+END_SRC
+*** Golang
+- Go-path
+#+BEGIN_SRC emacs-lisp
+(use-package go-gopath
+  :ensure t)
+#+END_SRC
+- Go-mode
+#+BEGIN_SRC emacs-lisp
+(use-package go-mode
+  :ensure t
+  :interpreter "go"
+  :mode "\\.go$"
+  :config
+    (progn
+      (setq gofmt-command "goimports")
+      (setq go-packages-function 'go-packages-go-list))
+  :init
+    (progn
+      (add-hook 'before-save-hook #'gofmt-before-save)
+      (add-hook 'go-mode-hook 'flycheck-mode)))
+#+END_SRC
+- Go-rename
+#+BEGIN_SRC emacs-lisp
+(use-package go-rename
+  :ensure t)
+#+END_SRC
+- Go-guru
+#+BEGIN_SRC emacs-lisp
+(use-package go-guru
+  :ensure t)
+#+END_SRC
+*** SQL
+#+BEGIN_SRC emacs-lisp
+(use-package sql-indent
+  :ensure t
+  :after (:any sql sql-interactive-mode)
+  :delight sql-mode "Σ ")
+#+END_SRC
+
+* UI
+- Theme
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package silkworm-theme
+  ;;   :ensure t
+  ;;   :init
+  ;;     (load-theme 'silkworm t))
+#+END_SRC
+* Hydra
+#+BEGIN_SRC emacs-lisp
+  (use-package hydra
+    :ensure t
+    :bind(("C-c f" . hydra-flycheck/body)
+          ("C-c m" . hydra-magit/body)
+          ("C-c g" . hydra-golang/body)
+          ("C-c p" . hydra-projectile/body)))
+
+  (use-package major-mode-hydra
+    :ensure t
+    :after hydra
+    :preface
+    (defun with-alltheicon (icon str &optional height v-adjust)
+      "Displays an icon from all-the-icon."
+      (s-concat (all-the-icons-alltheicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+    (defun with-faicon (icon str &optional height v-adjust)
+      "Displays an icon from Font Awesome icon."
+      (s-concat (all-the-icons-faicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+    (defun with-fileicon (icon str &optional height v-adjust)
+      "Displays an icon from the Atom File Icons package."
+      (s-concat (all-the-icons-fileicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+    (defun with-octicon (icon str &optional height v-adjust)
+      "Displays an icon from the GitHub Octicons."
+      (s-concat (all-the-icons-octicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str)))
+#+END_SRC
+** Flycheck
+#+BEGIN_SRC emacs-lisp
+(pretty-hydra-define hydra-flycheck
+  (:hint nil :color teal :quit-key "q" :title (with-faicon "plane" "Flycheck" 1 -0.05))
+  ("Checker"
+   (("?" flycheck-describe-checker "describe")
+    ("d" flycheck-disable-checker "disable")
+    ("m" flycheck-mode "mode")
+    ("s" flycheck-select-checker "select"))
+   "Errors"
+   (("<" flycheck-previous-error "previous" :color pink)
+    (">" flycheck-next-error "next" :color pink)
+    ("f" flycheck-buffer "check")
+    ("l" flycheck-list-errors "list"))
+   "Other"
+   (("M" flycheck-manual "manual")
+    ("v" flycheck-verify-setup "verify setup"))))
+#+END_SRC
+** Magic
+#+BEGIN_SRC emacs-lisp
+(pretty-hydra-define hydra-magit
+  (:hint nil :color teal :quit-key "q" :title (with-alltheicon "git" "Magit" 1 -0.05))
+  ("Action"
+   (("b" magit-blame "blame")
+    ("c" magit-clone "clone")
+    ("i" magit-init "init")
+    ("l" magit-log-buffer-file "commit log (current file)")
+    ("L" magit-log-current "commit log (project)")
+    ("s" magit-status "status"))))
+#+END_SRC
+** Projectile
+#+BEGIN_SRC emacs-lisp
+(pretty-hydra-define hydra-projectile
+  (:hint nil :color teal :quit-key "q" :title (with-faicon "rocket" "Projectile" 1 -0.05))
+  ("Buffers"
+   (("b" projectile-switch-to-buffer "list")
+    ("k" projectile-kill-buffers "kill all"))
+   "Find"
+   (("d" projectile-find-dir "directory")
+    ("D" projectile-dired "root")
+    ("f" projectile-find-file "file")
+    ("p" projectile-switch-project "project"))
+   "Other"
+   (("i" projectile-invalidate-cache "reset cache"))
+   "Search"
+   (("r" projectile-replace "replace")
+    ("R" projectile-replace-regexp "regexp replace")
+    ("s" projectile-ag "ag search"))))
+#+END_SRC
+** Golang
+#+BEGIN_SRC emacs-lisp
+(pretty-hydra-define hydra-golang
+  (:hint nil :color teal :quit-key "q" :title (with-alltheicon "go" "Go" 1 -0.05))
+  ("Guru"
+   (("d" godef-jump "go to defenition")
+    ("D" go-guru-describe "describe exp")
+    ("R" go-guru-referrers "show referrers")
+    ("f" go-guru-freevars "show free names")
+    ("P" go-guru-pointsto "show points to")
+    ("p" go-guru-peers "show channel peers")
+)
+   "Imports"
+    (("i" go-import-add "add import")
+     ("I" go-goto-imports "go to imports"))
+   "Tests"
+   (("t" go-coverage "coverage"))
+   "Refactoring"
+   (("r" go-rename "rename"))
+))
+#+END_SRC
