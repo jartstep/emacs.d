@@ -38,7 +38,8 @@
    tab-width 4                                      ; Set width for tabs
    user-full-name "Artemiy Stepanov"                ; Set the full name of the current user
    vc-follow-symlinks t                             ; Always follow the symlinks
-   view-read-only t)                                ; Always open read-only buffers in view-mode
+   view-read-only t
+   cursor-type 'bar)                                ; Always open read-only buffers in view-mode
 
   (column-number-mode 1)                            ; Show the column number
   (display-time-mode 1)                             ; Enable time in the mode-line
@@ -78,7 +79,7 @@
 #+END_SRC
 - Fonts
 #+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default nil :font "Cascadia Code" :weight 'light' :height 160)
+(set-face-attribute 'default nil :font "JetBrains Mono" :weight 'light' :height 140)
 (set-fontset-font t 'latin "Noto Sans")
 #+END_SRC
 * Programming
@@ -325,10 +326,10 @@
 * UI
 - Theme
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package silkworm-theme
-  ;;   :ensure t
-  ;;   :init
-  ;;     (load-theme 'silkworm t))
+  (use-package doom-themes
+    :ensure t
+    :init
+      (load-theme 'doom-one t))
 #+END_SRC
 * Hydra
 #+BEGIN_SRC emacs-lisp

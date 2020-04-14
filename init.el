@@ -1,9 +1,9 @@
 (require 'package)
 (setq package-enable-at-startup nil)
-;; (add-to-list 'package-archives
-;;     '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives
-    '("melpa2" . "http://www.mirrorservice.org/sites/melpa.org/packages/"))
+    '("melpa" . "http://melpa.org/packages/"))
+;; (add-to-list 'package-archives
+;;     '("melpa2" . "http://www.mirrorservice.org/sites/melpa.org/packages/"))
 ;; (add-to-list 'package-archives
 ;;      '("melpa3" . "http://www.mirrorservice.org/sites/stable.melpa.org/packages/"))
 (package-initialize)
@@ -33,7 +33,7 @@
  '(lsp-prefer-flymake nil t)
  '(package-selected-packages
    (quote
-    (silkworm-theme go-guru go-rename ag all-the-icons exec-path-from-shell use-package))))
+    (doom-themes silkworm-theme go-guru go-rename ag all-the-icons exec-path-from-shell use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
